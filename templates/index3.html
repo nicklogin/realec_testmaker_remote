@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<head>
+<style>
+.main {
+text-align: center;
+}
+</style>
+</head>
+<body class="main">
+<p>Enter path to essay:</p>
+<form method="GET" name="generateExercises">
+<p><input type="text" name="essaypath" size="160"></p>
+<p><b>Exercise generating options</b></p>
+<p><input type="checkbox" name="two-variants">Generate 2 variants of test <!--(Can be used only when option "Get the link to the output file"
+is selected)--></p>
+<p><input type="checkbox" name="not-repeat">Do not repeat questions in variants</p>
+<p><input type="checkbox" name="context">Include contexts</p>
+<!-- <p><b>Output options</b></p>
+<p><input type="radio" name="fileaction" value="send_file">Get the output file</p>
+<p><input type="radio" name="fileaction" value="send_link">Get the link to the output file</p> -->
+</form>
+<a href="javascript:submitAndRedirect()">
+    <p><button>Generate exercises!</button></p>
+</a>
+<div id="file-addr1" style="border: solid;">Here will be path(s) to your generated exercise file(s) <!--if option "Get the link to the output file
+    " is selected.--></div>
+<script type="text/javascript">
+    function submitAndRedirect() {
+        // alert("entered")
+        // var action = document.generateExercises.elements.namedItem("fileaction").value;
+        // if (action == "send_file") {
+        //     document.generateExercises.submit();
+        //     setTimeout(function() {
+        //         location.href = "/";
+        //     }, 500);
+        // } else if (action == "send_link") {
+        var essaypath = document.generateExercises.elements.namedItem("essaypath").value;
+        // alert(essaypath);
+        essaypath = encodeURIComponent(essaypath);
+        var query = "writefile?essaypath="+essaypath;
+        var n_variants = document.generateExercises.elements.namedItem("two-variants").checked;
+        var not_repeat = document.generateExercises.elements.namedItem("not-repeat").checked;
+        var context = document.generateExercises.elements.namedItem("context").checked;
+        query += "&two-variants="+n_variants;
+        query += "&not-repeat="+not_repeat;
+        query += "&context="+context;
+        // alert(query);
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        if (n_variants===false) {
+                            var essayaddr = JSON.parse(this.responseText)["short_answer"];
+                            // alert(essayaddr);
+                            document.getElementById("file-addr1").innerHTML = '<a href="'+essayaddr+'" download="short_answer"> Download </a>';
+                        } else {
+                            var essayaddr1 = JSON.parse(this.responseText)["short_answer_variant1"];
+                            var essayaddr2 = JSON.parse(this.responseText)["short_answer_variant2"];
+                            var addrs = '<p>Variant1: ';
+                            addrs += '<a href="'+essayaddr1+'" download="short_answer_variant1"> Download</a></p>';
+                            addrs += '<p>Variant2: ';
+                            addrs += '<a href="'+essayaddr2+'" download="short_answer_variant2"> Download </a></p>';
+                            document.getElementById("file-addr1").innerHTML = addrs;
+                            //добавь пиктограммы, которые открывали бы ссылки на скачивание файлов в новых окнах
+                            // alert('OK - Two variants generated!');
+                        }
+                    }
+                };
+        xhttp.open("GET",query,true);
+        xhttp.send();
+        // }
+    }
+</script>
+</body>
+</html>

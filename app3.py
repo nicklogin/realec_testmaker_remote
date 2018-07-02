@@ -11,37 +11,37 @@ def display_index():
     #разобраться, почемц перестала работать отправка файла
     #(скорее всего превышение таймаута в 500 мс)
     #можно переделать через javascript, направляя запросы не к главной, а к другой странице сайта
-    if request.args:
-        # print(request.args['essaypath'])
-        essay_addr = request.args['essaypath']
-        if 'two-variants'in request.args:
-            two_var = True
-        else:
-            two_var = False
-        if 'not-repeat' in request.args:
-            norepeat = True
-        else:
-            norepeat = False
-        if 'context' in request.args:
-            context = True
-        else:
-            context = False
-        files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr,
-        file_output = False, write_txt = False, make_two_variants=two_var, exclude_repeated=norepeat,
-        context = context)
-        if 'short_answer_xml' in files_to_send:
-            file_to_send = files_to_send['short_answer_xml']
-        else:
-            file_to_send = files_to_send['short_answer_variant1_xml']
-        file_to_send.seek(0)
-        return send_file(file_to_send,attachment_filename='short_answer.xml',
-        as_attachment = True)
-        # for key in files_to_send:
-        #     file_to_send = files_to_send[key]
-        #     file_to_send.seek(0)
-        #     return send_file(file_to_send,attachment_filename=key+'.xml',
-        #     as_attachment = True)
-    return render_template('index2.html')
+    # if request.args:
+    #     # print(request.args['essaypath'])
+    #     essay_addr = request.args['essaypath']
+    #     if 'two-variants'in request.args:
+    #         two_var = True
+    #     else:
+    #         two_var = False
+    #     if 'not-repeat' in request.args:
+    #         norepeat = True
+    #     else:
+    #         norepeat = False
+    #     if 'context' in request.args:
+    #         context = True
+    #     else:
+    #         context = False
+    #     files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr,
+    #     file_output = False, write_txt = False, make_two_variants=two_var, exclude_repeated=norepeat,
+    #     context = context)
+    #     if 'short_answer_xml' in files_to_send:
+    #         file_to_send = files_to_send['short_answer_xml']
+    #     else:
+    #         file_to_send = files_to_send['short_answer_variant1_xml']
+    #     file_to_send.seek(0)
+    #     return send_file(file_to_send,attachment_filename='short_answer.xml',
+    #     as_attachment = True)
+    #     # for key in files_to_send:
+    #     #     file_to_send = files_to_send[key]
+    #     #     file_to_send.seek(0)
+    #     #     return send_file(file_to_send,attachment_filename=key+'.xml',
+    #     #     as_attachment = True)
+    return render_template('index3.html')
 
 @app.route('/getfile')
 def send_exercise_file():
@@ -73,7 +73,7 @@ def write_on_server():
         files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = './quizzes',
         file_output = True, write_txt = False, make_two_variants = two_var, exclude_repeated = norepeat, hier_choice = True)
         # files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
-        files_to_send = {i:"https://new-realec-testmaker.herokuapp.com//getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
+        files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         return jsonify(files_to_send)
 
 if __name__ == '__main__':
