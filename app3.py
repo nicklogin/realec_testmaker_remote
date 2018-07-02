@@ -8,6 +8,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def display_index():
+    #разобраться, почемц перестала работать отправка файла
+    #(скорее всего превышение таймаута в 500 мс)
+    #можно переделать через javascript, направляя запросы не к главной, а к другой странице сайта
     if request.args:
         # print(request.args['essaypath'])
         essay_addr = request.args['essaypath']
