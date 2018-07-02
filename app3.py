@@ -26,10 +26,18 @@ def display_index():
         files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr,
         file_output = False, write_txt = False, make_two_variants=two_var, exclude_repeated=norepeat,
         context = context)
-        file_to_send = files_to_send['short_answer_xml']
+        if 'short_answer_xml' in files_to_send:
+            file_to_send = files_to_send['short_answer_xml']
+        else:
+            file_to_send = files_to_send['short_answer_variant1_xml']
         file_to_send.seek(0)
         return send_file(file_to_send,attachment_filename='short_answer.xml',
         as_attachment = True)
+        # for key in files_to_send:
+        #     file_to_send = files_to_send[key]
+        #     file_to_send.seek(0)
+        #     return send_file(file_to_send,attachment_filename=key+'.xml',
+        #     as_attachment = True)
     return render_template('index2.html')
 
 @app.route('/getfile')
