@@ -1,0 +1,86 @@
+<quiz>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 0</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ To my mind, the main reason for <b>such tendency</b> is freedom on the Internet, where it is not very likely to find a censorship on most of the websites, and also computer games]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[such a tendency]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 1</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ To overcome this, <b>parent s</b> can restrict children's access to the Internet]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[parents]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 2</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ First of all, parents can pay money to the specialist<b>, who</b> will install parents control on the computer, so that children would not have any opportunity to visit webpages with specific content]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[ who]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 3</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ The positive effect from this is that the level of child aggression <b>would really decline</b>, since they will not be able to see violence and crimes]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[will really decline]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 4</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ Children perceive information very well, so they <b>would grow</b> up with the knowledge of appropriate behavior]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[will grow]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 5</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ On the other hand, this method can <b>be not</b> successful, since there is a possibility of making the situation worse by a constant reminder how to live]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[fail to be]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+<question type="shortanswer">
+                    <name>
+                    <text>Grammar realec. Short answer 6</text>
+                     </name>
+                <questiontext format="html">
+                <text><![CDATA[ All in all, I suppose, that the problem of juvenile crime caused by violence is not going to be solved in <b>nearly</b> future because of many aspects, though I think that the parents control is the most effective method today]]></text>
+             </questiontext>
+        <answer fraction="100">
+        <text><![CDATA[near]]></text>
+        <feedback><text>Correct!</text></feedback>
+        </answer>
+        </question>
+</quiz>
