@@ -51,16 +51,16 @@ is selected)--></p>
         xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         if (n_variants===false) {
-                            var essayaddr = JSON.parse(this.responseText)["short_answer"];
+                            var essayaddr = JSON.parse(this.responseText)["short_answer.xml"];
                             // alert(essayaddr);
                             document.getElementById("file-addr1").innerHTML = '<a href="'+essayaddr+'" download="short_answer"> Download </a>';
                         } else {
                             var essayaddr1 = JSON.parse(this.responseText)["short_answer_variant1"];
                             var essayaddr2 = JSON.parse(this.responseText)["short_answer_variant2"];
                             var addrs = '<p>Variant1: ';
-                            addrs += '<a href="'+essayaddr1+'" download="short_answer_variant1"> Download</a></p>';
+                            addrs += '<a href="'+essayaddr1+'" download="short_answer_variant1.xml"> Download</a></p>';
                             addrs += '<p>Variant2: ';
-                            addrs += '<a href="'+essayaddr2+'" download="short_answer_variant2"> Download </a></p>';
+                            addrs += '<a href="'+essayaddr2+'" download="short_answer_variant2.xml"> Download </a></p>';
                             document.getElementById("file-addr1").innerHTML = addrs;
                             //добавь пиктограммы, которые открывали бы ссылки на скачивание файлов в новых окнах
                             // alert('OK - Two variants generated!');
