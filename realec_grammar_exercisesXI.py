@@ -818,8 +818,9 @@ class Exercise:
                                 chosen2 = random.choice(other_err_ids)
                         else:
                             new_sent2, answers2 = '',[]
-                            err_types = list(enumerate([split_sent[i] for i in range(len(split_sent)) if i%6==1])) ##находим все типы ошибок в предложении
+                            err_types = list(enumerate([split_sent[i] for i in range(len(split_sent)) if i%5==2])) ##находим все типы ошибок в предложении
                             err_types = sorted(err_types, key = lambda x: self.get_hierarchy(x[1]), reverse = True) ##сортируем порядковые номера (по нахождению в тексте слева направо тегов
+                            # print(err_types)
                             ##ошибок в согласии с иерархией тегов ошибок)
                             chosen = err_types[0][0]
                             if self.make_two_variants:
@@ -1228,7 +1229,7 @@ if __name__ == '__main__':
     # for i in file_objects:
     #     print(i, file_objects[i].getvalue())
     file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/EGe_105_2', file_output = True, write_txt = False, use_ram=False,
-    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = True)
+    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False)
     for i in file_addrs:
         print(i, file_addrs[i])
     # console_user_interface()
