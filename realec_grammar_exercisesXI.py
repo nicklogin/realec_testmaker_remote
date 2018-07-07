@@ -186,7 +186,7 @@ class Exercise:
      ann = None, text = None, error_types = [], bold = False, context = False, mode = 'folder',
       maintain_log = True, show_messages = True, use_ram=False,output_file_names = None,
       file_output = True, write_txt = False, keep_processed = False, hier_choice = False,
-      make_two_variants = False, exclude_repeated = False):
+      make_two_variants = False, exclude_repeated = False, include_smaller_mistakes = False):
 
         """"
         :param error_types: list of str, can include values from
@@ -226,6 +226,12 @@ class Exercise:
         self.write_txt = write_txt
         self.use_ram = use_ram
         self.mode = mode
+        if self.mode in ('file','direct_input') and self.make_two_variants:
+            ##пока делаем возможность использовать во втором варианте ошибки
+            ##с меньшей областью, только если на вход поступает одно эссе:
+            self.include_smaller_mistakes = include_smaller_mistakes
+        else:
+            self.include_smaller_mistakes = False
         self.file_output = file_output
         ##Note: maintain_log is forcibly set to False if file_output is False
         self.maintain_log = maintain_log
@@ -317,16 +323,22 @@ class Exercise:
 
     def find_answers_indoc(self, line):
         if re.search('^#', line) is not None and 'lemma =' not in line:
-            try:
-                number, annotation, correction = line.strip().split('\t')
-                t_error = annotation.split()[1]
-                if self.current_doc_errors.get(t_error):
-                    validated = self.validate_answers(correction)
-                    if validated is not None:
-                        self.current_doc_errors[annotation.split()[1]]['Right'] = validated
-            except:
-                #print (''.join(traceback.format_exception(*sys.exc_info())))
-                print("Answers: Something wrong! No Notes probably", line)
+            # try:
+            number, annotation, correction = line.strip().split('\t')
+            t_error = annotation.split()[1]
+            err = self.current_doc_errors.get(t_error)
+            if err:
+                validated = self.validate_answers(correction)
+                if validated is not None:
+                    ##если убирается запятая, следим, чтобы исправление начиналось с пробела,
+                    ##иначе дописываем его к исправлению:
+                    if ((err.get('Error') == 'Punctuation' or err.get('Error') == 'Defining') and 
+                    not validated.startswith(',') and not validated.startswith(' ') and err.get('Wrong').startswith(',')):
+                        validated = ' '+validated
+                    self.current_doc_errors[annotation.split()[1]]['Right'] = validated
+            # except:
+            #     #print (''.join(traceback.format_exception(*sys.exc_info())))
+            #     print("Answers: Something wrong! No Notes probably", line)
 
     def find_relations_indoc(self, line):
         if re.search('^R', line) is not None:
@@ -399,7 +411,8 @@ class Exercise:
                 self.make_one_file(ann[:ann.find('.ann')],processed_text_filename)
             elif self.mode == 'direct_input':
                 self.save_processed(self.text, output_filename=self.path_new+'processed')
-        self.current_doc_errors.clear()
+        if not self.include_smaller_mistakes:
+            self.current_doc_errors.clear()
 
     def find_embeddings(self,indices):
         ##сортируем исправления - сначала сортируем по возрастанию первого индекса,
@@ -443,8 +456,12 @@ class Exercise:
                 if e['Index'][0]-b == j:
                     if 'Right' in e and 'Right' in dic and e['Right'] == dic['Right']:
                         break
-                    if str(e['Index']) in self.embedding:
-                        ignore += self.embedding[str(e['Index'])]
+                    for t1, e1 in emb_errors:
+                        if str(e['Index']) in self.embedding[str(e1['Index'])]:
+                            ignore += self.embedding[str(e['Index'])]
+                            break
+                    # if str(e['Index']) in self.embedding:
+                    #     ignore += self.embedding[str(e['Index'])]
                     if e['Index'] in self.error_intersects:
                         emb_intersects.append((int(t[1:]),e))
                         continue
@@ -508,9 +525,7 @@ class Exercise:
             for t_key, dic in self.current_doc_errors.items():
                 ##если начало какой-либо ошибки приходится на текущий символ:
                 if dic.get('Index')[0] == i:
-                    if (dic.get('Error') == 'Punctuation' or dic.get('Error') == 'Defining') and 'Right' in dic and \
-                       not dic.get('Right').startswith(','):
-                        dic['Right'] = ' '+dic['Right']
+                    dic['from_last_dot'] =  dic.get('Index')[0] - one_text[:i].rfind('.') - 1
                     ##если исправление попало в меньшую область ошибки - не берём его:
                     if dic.get('Index') in self.embedded:
                         continue
@@ -518,7 +533,7 @@ class Exercise:
                     if str(dic.get('Index')) in self.embedding:
                         if self.to_include(dic):
                             new_wrong = self.tackle_embeddings(dic)
-                            processed += '**'+str(dic.get('Right'))+'**'+str(dic.get('Error'))+'**'+str(dic.get('Relation'))+'**'+str(len(new_wrong))+'**'+new_wrong
+                            processed += '**'+str(dic.get('Right'))+'**'+str(t_key)+'**'+str(dic.get('Error'))+'**'+str(dic.get('Relation'))+'**'+str(len(new_wrong))+'**'+new_wrong
                             ##устанавливаем, сколько итераций мы не будем дописывать символы:
                             not_to_write_sym = len(dic['Wrong'])
                             break
@@ -565,7 +580,7 @@ class Exercise:
                     if dic.get('Right'):
                         indexes_comp = dic.get('Index')[1] - dic.get('Index')[0]
                         if self.to_include(dic):
-                            processed += '**'+str(dic.get('Right'))+'**'+str(dic.get('Error'))+'**'+str(dic.get('Relation'))+'**'+str(indexes_comp)+'**'
+                            processed += '**'+str(dic.get('Right'))+'**'+str(t_key)+'**'+str(dic.get('Error'))+'**'+str(dic.get('Relation'))+'**'+str(indexes_comp)+'**'
                         else:
                             processed += dic.get('Right') +'#'+str(indexes_comp)+ '#'
                     else:
@@ -585,11 +600,11 @@ class Exercise:
                         to_change = intersects[-1]
                         if 'Right' not in to_change or to_change['Right'] == saving['Right']:
                             indexes_comp = saving['Index'][1] - saving['Index'][0]
-                            processed += '**'+str(saving['Right'])+'**'+str(saving['Error'])+'**'+str(saving['Relation'])+'**'+str(indexes_comp)+'**'
+                            processed += '**'+str(saving['Right'])+'**'+str(t_key)+'**'+str(saving['Error'])+'**'+str(saving['Relation'])+'**'+str(indexes_comp)+'**'
                         else: 
                             indexes_comp = len(to_change['Right'])
                             not_to_write_sym = saving['Index'][1] - saving['Index'][0]
-                            processed += '**'+str(saving['Right'])+'**'+str(saving['Error'])+'**'+str(saving['Relation'])+'**'+str(indexes_comp)+'**'+to_change['Right']
+                            processed += '**'+str(saving['Right'])+'**'+str(t_key)+'**'+str(saving['Error'])+'**'+str(saving['Relation'])+'**'+str(indexes_comp)+'**'+to_change['Right']
                 else:
                     if 'Right' in intersects[-1]:
                         if len(intersects) > 1 and 'Right' in intersects[-2]:
@@ -713,8 +728,15 @@ class Exercise:
         Makes sentences and write answers for all exercise types
         :return: array of good sentences. [ (sentences, [right_answer, ... ]), (...)]
         """
+        def create_short_answer_ex(sent, wrong, other, right_answer, index):
+            if self.bold:
+                new_sent = sent + '<b>' + wrong + '</b>' + other[int(index):] + '.'
+            else:
+                new_sent = sent + wrong + other[int(index):] + '.'
+            answers = [right_answer]
+            return new_sent, answers
 
-        def build_exercise_text(text, answers, index=None):
+        def build_exercise_text(text, answers, index=None, single_question = False):
             # if sent1 and sent3 and self.context: # fixed sentences beginning with a dot
             #     text = correct_all_errors(sent1) + '. ' + new_sent + ' ' + correct_all_errors(sent3) + '.'
             # elif sent3 and self.context:
@@ -732,9 +754,9 @@ class Exercise:
                 if self.maintain_log:
                     question_log["result"] = "ok"
                 if not index:
-                    good_sentences[ex_type].append((text, answers))
+                    good_sentences[ex_type].append((text, answers, single_question))
                 else:
-                    good_sentences[ex_type+'_variant'+str(index)].append((text, answers))
+                    good_sentences[ex_type+'_variant'+str(index)].append((text, answers, single_question))
             elif '**' in text:
                 if self.show_messages:
                     print('text and answers arent added cause ** in text: ', text, answers)
@@ -760,18 +782,84 @@ class Exercise:
             sentences = ['.'.join(sentences[i:i+3]) for i in range(0,len(sentences),3)]
             # for sentence in sentences:
             #     print(sentence)
+        var1 = False
         for sent2 in sentences:
             # i += 1
+            single_error_in_sent = False
             to_skip = False
             if '**' in sent2:
                 ex_type = random.choice(self.exercise_types)
                 try:
-                    sent, right_answer, err_type, relation, index, other = sent2.split('**')
+                    sent, right_answer, err_index, err_type, relation, index, other = sent2.split('**')
+                    # print('/'.join([sent, err_index, right_answer, err_type, relation, index, other]))
+                    # input()
                     wrong = other[:int(index)]
                     new_sent, answers = '', []
                     if self.make_two_variants and self.exclude_repeated and (ex_type=='short_answer' or ex_type=='multiple_choice'):
-                        continue
-                    if ex_type == 'word_form':
+                        # print(self.embedding, self.include_smaller_mistakes, err_index)
+                        # input()
+                        # raise Exception
+                        biggest_span = self.current_doc_errors[err_index]
+                        # print(biggest_span['Index'], self.embedding, self.include_smaller_mistakes)
+                        region = str(biggest_span['Index'])
+                        if region in self.embedding and self.include_smaller_mistakes:
+                            # print('entered')
+                            smaller_mistakes = [val for key,val in self.current_doc_errors.items() if val['Index'] in self.embedding[region]]
+                            # print(smaller_mistakes)
+                            # input()
+                            smaller_mistakes = sorted(smaller_mistakes, key = lambda x: self.get_hierarchy(x.get('Error')))
+                            candidate = smaller_mistakes[0]
+                            # if self.get_hierarchy(biggest_span['Error'])>self.get_hierarchy(candidate['Error']):
+                            #     single_error_in_sent = True
+                            #     new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
+                            #     var1 = not var1
+                            # else:
+                            ##с difflib'ом ничего не получается, попробуй тогда:
+                            ##Если одна из границ вложенной ошибки совпадает - обрезать ответ на длину candidate['Right']
+                            ##Если ни одна из границ не совпаадет - регуляркой найти candidate['Right'] c пробельным символом спереди/сзади,
+                            ##Заменить на '<b>'+candidate['wrong']+'</b>'
+                            if self.context:
+                                ##fsl stands for first sentence length in a given context
+                                fsl = sent2.find('.')
+                                left_bord = fsl + candidate['from_last_dot']
+                            else:
+                                left_bord = candidate['from_last_dot']
+                            original_sent = sent + other
+                            # print(original_sent)
+                            # print(original_sent[:left_bord], original_sent[left_bord+len(candidate['Right']):], sep = '/')
+                            original_sent = original_sent[:left_bord] + candidate['Wrong'] + original_sent[left_bord+len(candidate['Right']):]
+                            edited_sent = sent + right_answer + other[int(index):]
+                            print(original_sent)
+                            print(edited_sent)
+                            matcher = difflib.SequenceMatcher(a = original_sent, b = edited_sent)
+                            ops = matcher.get_opcodes()
+                            print(ops)
+                            # right_bord = candidate['from_last_dot']+len(candidate['Wrong'])
+                            print(left_bord, original_sent[:left_bord])
+                            left_ops = [op for op in ops if op[1]<left_bord]
+                            for i in left_ops:
+                                print(i, original_sent[i[1]:i[2]], edited_sent[i[3]:i[4]])
+                            len_diff = left_ops[-1][4] - left_ops[-1][2]
+                            bord1 = left_bord + len_diff
+                            bord2 = bord1 + len(right_answer)
+                            # right_ops = [op for op in ops if op[1]>right_bord]
+                            if ex_type == 'short_answer':
+                                if self.bold:
+                                    new_sent = sent + '<b>' + wrong + '</b>' + other + '.'
+                                    new_sent2 = edited_sent[:bord1] + '<b>' + candidate['Wrong'] + '</b>' + edited_sent[bord2:] + '.'
+                                else:
+                                    new_sent = sent + wrong + other + '.'
+                                    new_sent2 = edited_sent[:bord1] + wrong + edited_sent[bord2:] + '.'
+                                answers = [right_answer]
+                                answers2 = [candidate['Right']]
+                            # elif ex_type == 'multiple_choice':
+                            #     pass
+                        else:
+                            if ex_type == 'short_answer':
+                                single_error_in_sent = True
+                                new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
+                                var1 = not var1
+                    elif ex_type == 'word_form':
                         try:
                             new_sent = sent + "{1:SHORTANSWER:=%s}" % right_answer + ' (' +\
                                    self.check_headform(right_answer) + ')' + other[int(index):] + '.'
@@ -781,13 +869,9 @@ class Exercise:
                                 ex_type = random.choice(types1) 
                             else:
                                 continue
-                    if ex_type == 'short_answer':
-                        if self.bold:
-                            new_sent = sent + '<b>' + wrong + '</b>' + other[int(index):] + '.'
-                        else:
-                            new_sent = sent + wrong + other[int(index):] + '.'
-                        answers = [right_answer]
-                    if ex_type == 'open_cloze':
+                    elif ex_type == 'short_answer':
+                        new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
+                    elif ex_type == 'open_cloze':
                         new_sent = sent + "{1:SHORTANSWER:=%s}" % right_answer + other[int(index):] + '.'
                         answers = [right_answer]
                     # if ex_type == 'multiple_choice':
@@ -804,7 +888,7 @@ class Exercise:
                     ## вот здесь работаем с предложениями, где больше одной ошибки
                     ## сюда имплементируй иерархию тегов:
                     split_sent = sent2.split('**')
-                    n = (len(split_sent) - 1) / 5
+                    n = (len(split_sent) - 1) / 6
                     if n%1:
                         print('Some issues with markup, skipping:',sent2)
                         continue
@@ -818,13 +902,13 @@ class Exercise:
                                 chosen2 = random.choice(other_err_ids)
                         else:
                             new_sent2, answers2 = '',[]
-                            err_types = list(enumerate([split_sent[i] for i in range(len(split_sent)) if i%5==2])) ##находим все типы ошибок в предложении
+                            err_types = list(enumerate([split_sent[i] for i in range(len(split_sent)) if i%6==3])) ##находим все типы ошибок в предложении
                             err_types = sorted(err_types, key = lambda x: self.get_hierarchy(x[1]), reverse = True) ##сортируем порядковые номера (по нахождению в тексте слева направо тегов
                             # print(err_types)
                             ##ошибок в согласии с иерархией тегов ошибок)
                             chosen = err_types[0][0]
                             if self.make_two_variants:
-                                if split_sent[chosen*5+3]!='Parallel_construction':
+                                if split_sent[chosen*6+3]!='Parallel_construction':
                                     chosen2 = err_types[1][0]
                                 else:
                                     chosen2 = -1
@@ -839,13 +923,15 @@ class Exercise:
                                         else:
                                             chosen2 = err_types[1][0]
                             # print(chosen, chosen2)
-                    sent_errors = [{'sent':split_sent[i],'right_answer':split_sent[i+1],'err_type':split_sent[i+2],
-                    'relation':split_sent[i+3],'index':split_sent[i+4],'other':split_sent[i+5]} for i in range(0,len(split_sent),5) if len(split_sent[i:i+4]) > 1]
+                    sent_errors = [{'sent':split_sent[i],'right_answer':split_sent[i+1],'err_index':split_sent[i+2],'err_type':split_sent[i+3],
+                    'relation':split_sent[i+4],'index':split_sent[i+5],'other':split_sent[i+6]} for i in range(0,len(split_sent),6) if len(split_sent[i:i+5]) > 1]
                     # print(chosen, len(sent_errors))
                     for i in range(len(sent_errors)):
                         if not to_skip:
                             # sent, right_answer, err_type, relation, index, other = split_sent[i],split_sent[i+1],split_sent[i+2],split_sent[i+3],split_sent[i+4],split_sent[i+5]
                             sent,right_answer,index,relation,other = sent_errors[i]['sent'],sent_errors[i]['right_answer'],sent_errors[i]['index'],sent_errors[i]['relation'],sent_errors[i]['other']
+                            # print('/'.join([sent, err_index, right_answer, err_type, relation, index, other]))
+                            # input()
                             try:
                                 index = int(index)
                             except:
@@ -928,16 +1014,23 @@ class Exercise:
                                 new_sent2 = new_sent2 + '.'
                 if self.make_two_variants:
                     if ex_type in ('short_answer','multiple_choice'):
-                        if sent2.count('**')>5:
-                            build_exercise_text(new_sent,answers,1)
-                            build_exercise_text(new_sent2,answers2,2)
+                        if single_error_in_sent:
+                            # print(var1)
+                            if var1==True:
+                                build_exercise_text(new_sent, answers, 1, single_error_in_sent)
+                            elif var1==False:
+                                build_exercise_text(new_sent, answers, 2, single_error_in_sent)
                         else:
-                            build_exercise_text(new_sent,answers,1)
-                            build_exercise_text(new_sent,answers,2)
+                            if sent2.count('**')>5:
+                                build_exercise_text(new_sent,answers,1, single_error_in_sent)
+                                build_exercise_text(new_sent2,answers2,2, single_error_in_sent)
+                            else:
+                                build_exercise_text(new_sent,answers,1, single_error_in_sent)
+                                build_exercise_text(new_sent,answers,2, single_error_in_sent)
                     else:
-                        build_exercise_text(new_sent,answers)
+                        build_exercise_text(new_sent,answers, single_question = single_error_in_sent)
                 else:
-                    build_exercise_text(new_sent,answers)
+                    build_exercise_text(new_sent,answers, single_question = single_error_in_sent)
         return good_sentences
 
     def write_sh_answ_exercise(self, sentences, ex_type):
@@ -1102,7 +1195,7 @@ class Exercise:
             print('Writing '+key+' questions, '+str(len(all_sents[key]))+' total ...')
             if '_variant' in key:
                 ex_type = '_'.join(key.split('_')[:-1])
-                self.write_func[ex_type](all_sents[key], key)
+                self.write_func[ex_type](all_sents[key],key)
             else:
                 self.write_func[key](all_sents[key],key)
         if not self.use_ram:
@@ -1192,14 +1285,15 @@ def test_direct_input():
 
 def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['short_answer'],file_output = True,
  write_txt = False, use_ram = True, output_file_names = None, keep_processed = False, maintain_log = False, hier_choice = False,
- make_two_variants = False, exclude_repeated = False, output_path = './test_with_two_variants'):
+ make_two_variants = False, exclude_repeated = False, output_path = './test_with_two_variants', include_smaller_mistakes = True):
     helper = realec_helper.realecHelper()
     helper.download_essay(essay_name, include_json = False, save = False)
     e = Exercise(ann=helper.current_ann, text=helper.current_text,
      exercise_types = exercise_types, use_ram = use_ram,
      output_path = output_path, error_types = [], mode='direct_input', context=context,
      maintain_log = maintain_log, show_messages = False, bold = True, file_output = file_output, write_txt = write_txt, output_file_names = output_file_names,
-     keep_processed = keep_processed, hier_choice = hier_choice, make_two_variants = make_two_variants, exclude_repeated = exclude_repeated)
+     keep_processed = keep_processed, hier_choice = hier_choice, make_two_variants = make_two_variants, exclude_repeated = exclude_repeated,
+     include_smaller_mistakes = include_smaller_mistakes)
     e.make_data_ready_4exercise()
     e.make_exercise()
     if file_output:
@@ -1229,7 +1323,8 @@ if __name__ == '__main__':
     # for i in file_objects:
     #     print(i, file_objects[i].getvalue())
     file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/EGe_105_2', file_output = True, write_txt = False, use_ram=False,
-    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False)
+    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False, output_path='./quizzes',
+    include_smaller_mistakes=False)
     for i in file_addrs:
         print(i, file_addrs[i])
     # console_user_interface()
