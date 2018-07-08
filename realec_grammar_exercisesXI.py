@@ -796,65 +796,69 @@ class Exercise:
                     wrong = other[:int(index)]
                     new_sent, answers = '', []
                     if self.make_two_variants and self.exclude_repeated and (ex_type=='short_answer' or ex_type=='multiple_choice'):
-                        # print(self.embedding, self.include_smaller_mistakes, err_index)
-                        # input()
-                        # raise Exception
-                        biggest_span = self.current_doc_errors[err_index]
-                        # print(biggest_span['Index'], self.embedding, self.include_smaller_mistakes)
-                        region = str(biggest_span['Index'])
-                        if region in self.embedding and self.include_smaller_mistakes:
-                            # print('entered')
-                            smaller_mistakes = [val for key,val in self.current_doc_errors.items() if val['Index'] in self.embedding[region]]
-                            # print(smaller_mistakes)
+                        found_smaller = True
+                        if self.include_smaller_mistakes:
+                            # print(self.embedding, self.include_smaller_mistakes, err_index)
                             # input()
-                            smaller_mistakes = sorted(smaller_mistakes, key = lambda x: self.get_hierarchy(x.get('Error')))
-                            candidate = smaller_mistakes[0]
-                            # if self.get_hierarchy(biggest_span['Error'])>self.get_hierarchy(candidate['Error']):
-                            #     single_error_in_sent = True
-                            #     new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
-                            #     var1 = not var1
-                            # else:
-                            ##с difflib'ом ничего не получается, попробуй тогда:
-                            ##Если одна из границ вложенной ошибки совпадает - обрезать ответ на длину candidate['Right']
-                            ##Если ни одна из границ не совпаадет - регуляркой найти candidate['Right'] c пробельным символом спереди/сзади,
-                            ##Заменить на '<b>'+candidate['wrong']+'</b>'
-                            if self.context:
-                                ##fsl stands for first sentence length in a given context
-                                fsl = sent2.find('.')
-                                left_bord = fsl + candidate['from_last_dot']
-                            else:
-                                left_bord = candidate['from_last_dot']
-                            original_sent = sent + other
-                            # print(original_sent)
-                            # print(original_sent[:left_bord], original_sent[left_bord+len(candidate['Right']):], sep = '/')
-                            original_sent = original_sent[:left_bord] + candidate['Wrong'] + original_sent[left_bord+len(candidate['Right']):]
-                            edited_sent = sent + right_answer + other[int(index):]
-                            print(original_sent)
-                            print(edited_sent)
-                            matcher = difflib.SequenceMatcher(a = original_sent, b = edited_sent)
-                            ops = matcher.get_opcodes()
-                            print(ops)
-                            # right_bord = candidate['from_last_dot']+len(candidate['Wrong'])
-                            print(left_bord, original_sent[:left_bord])
-                            left_ops = [op for op in ops if op[1]<left_bord]
-                            for i in left_ops:
-                                print(i, original_sent[i[1]:i[2]], edited_sent[i[3]:i[4]])
-                            len_diff = left_ops[-1][4] - left_ops[-1][2]
-                            bord1 = left_bord + len_diff
-                            bord2 = bord1 + len(right_answer)
-                            # right_ops = [op for op in ops if op[1]>right_bord]
-                            if ex_type == 'short_answer':
-                                if self.bold:
-                                    new_sent = sent + '<b>' + wrong + '</b>' + other + '.'
-                                    new_sent2 = edited_sent[:bord1] + '<b>' + candidate['Wrong'] + '</b>' + edited_sent[bord2:] + '.'
+                            # raise Exception
+                            biggest_span = self.current_doc_errors[err_index]
+                            # print(biggest_span['Index'], self.embedding, self.include_smaller_mistakes)
+                            region = str(biggest_span['Index'])
+                            if region in self.embedding:
+                                # print('entered')
+                                smaller_mistakes = [val for key,val in self.current_doc_errors.items() if val['Index'] in self.embedding[region]]
+                                # print(smaller_mistakes)
+                                # input()
+                                smaller_mistakes = sorted(smaller_mistakes, key = lambda x: self.get_hierarchy(x.get('Error')))
+                                candidate = smaller_mistakes[0]
+                                # if self.get_hierarchy(biggest_span['Error'])>self.get_hierarchy(candidate['Error']):
+                                #     single_error_in_sent = True
+                                #     new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
+                                #     var1 = not var1
+                                # else:
+                                ##с difflib'ом ничего не получается, попробуй тогда:
+                                ##Если одна из границ вложенной ошибки совпадает - обрезать ответ на длину candidate['Right']
+                                ##Если ни одна из границ не совпаадет - регуляркой найти candidate['Right'] c пробельным символом спереди/сзади,
+                                ##Заменить на '<b>'+candidate['wrong']+'</b>'
+                                if self.context:
+                                    ##fsl stands for first sentence length in a given context
+                                    fsl = sent2.find('.')
+                                    left_bord = fsl + candidate['from_last_dot']
                                 else:
-                                    new_sent = sent + wrong + other + '.'
-                                    new_sent2 = edited_sent[:bord1] + wrong + edited_sent[bord2:] + '.'
-                                answers = [right_answer]
-                                answers2 = [candidate['Right']]
-                            # elif ex_type == 'multiple_choice':
-                            #     pass
-                        else:
+                                    left_bord = candidate['from_last_dot']
+                                original_sent = sent + other
+                                # print(original_sent)
+                                # print(original_sent[:left_bord], original_sent[left_bord+len(candidate['Right']):], sep = '/')
+                                original_sent = original_sent[:left_bord] + candidate['Wrong'] + original_sent[left_bord+len(candidate['Right']):]
+                                edited_sent = sent + right_answer + other[int(index):]
+                                print(original_sent)
+                                print(edited_sent)
+                                matcher = difflib.SequenceMatcher(a = original_sent, b = edited_sent)
+                                ops = matcher.get_opcodes()
+                                print(ops)
+                                # right_bord = candidate['from_last_dot']+len(candidate['Wrong'])
+                                print(left_bord, original_sent[:left_bord])
+                                left_ops = [op for op in ops if op[1]<left_bord]
+                                for i in left_ops:
+                                    print(i, original_sent[i[1]:i[2]], edited_sent[i[3]:i[4]])
+                                len_diff = left_ops[-1][4] - left_ops[-1][2]
+                                bord1 = left_bord + len_diff
+                                bord2 = bord1 + len(right_answer)
+                                # right_ops = [op for op in ops if op[1]>right_bord]
+                                if ex_type == 'short_answer':
+                                    if self.bold:
+                                        new_sent = sent + '<b>' + wrong + '</b>' + other + '.'
+                                        new_sent2 = edited_sent[:bord1] + '<b>' + candidate['Wrong'] + '</b>' + edited_sent[bord2:] + '.'
+                                    else:
+                                        new_sent = sent + wrong + other + '.'
+                                        new_sent2 = edited_sent[:bord1] + wrong + edited_sent[bord2:] + '.'
+                                    answers = [right_answer]
+                                    answers2 = [candidate['Right']]
+                                # elif ex_type == 'multiple_choice':
+                                #     pass
+                            else:
+                                found_smaller = False
+                        if not self.include_smaller_mistakes or not found_smaller:
                             if ex_type == 'short_answer':
                                 single_error_in_sent = True
                                 new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
@@ -1021,7 +1025,7 @@ class Exercise:
                             elif var1==False:
                                 build_exercise_text(new_sent, answers, 2, single_error_in_sent)
                         else:
-                            if sent2.count('**')>5:
+                            if sent2.count('**')>6:
                                 build_exercise_text(new_sent,answers,1, single_error_in_sent)
                                 build_exercise_text(new_sent2,answers2,2, single_error_in_sent)
                             else:
@@ -1190,6 +1194,13 @@ class Exercise:
             if '**' in new_text:
                 new_sents = self.create_sentence_function(new_text)
                 for key in all_sents:
+                    if self.make_two_variants:
+                        for err in self.error_type:
+                            if len(new_sents[err+'_variant1'])>len(new_sents[err+'_variant2']):
+                                for i in range(len(new_sents[err+'_variant1'])):
+                                    if new_sents[err+'_variant1'][i][3] == True:
+                                        new_sents[err+'_variant1'].pop(i)
+                                        break
                     all_sents[key] += new_sents[key]
         for key in all_sents:
             print('Writing '+key+' questions, '+str(len(all_sents[key]))+' total ...')

@@ -57,7 +57,7 @@ is selected)--></p>
                     if (this.readyState == 4 && this.status == 200) {
                         if (n_variants===false) {
                             var essayaddr = JSON.parse(this.responseText)["short_answer.xml"];
-                            // alert(essayaddr);
+                            alert("Your file is ready");
                             document.getElementById("file-addr1").innerHTML = '<a href="'+essayaddr+'" download="short_answer"> Download </a>';
                         } else {
                             var essayaddr1 = JSON.parse(this.responseText)["short_answer_variant1"];
@@ -68,7 +68,7 @@ is selected)--></p>
                             addrs += '<a href="'+essayaddr2+'" download="short_answer_variant2.xml"> Download </a></p>';
                             document.getElementById("file-addr1").innerHTML = addrs;
                             //добавь пиктограммы, которые открывали бы ссылки на скачивание файлов в новых окнах
-                            // alert('OK - Two variants generated!');
+                            alert('Your Moodle XML files are ready.');
                         }
                     }
                 };
