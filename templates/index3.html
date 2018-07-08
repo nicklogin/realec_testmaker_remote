@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-<!-- Все дети Determiners должны быть высокими по иерархии
-Разобраться, что происходит при пересечении/наложении - если два варианта, то
-добавить булевую переменную, которая если два варианта, будет записывать в разные
-варианты ошибки, входящие одна в другую.
-Записыва -->
 <meta charset="UTF-8">
 <html>
 <head>
 <style>
 .main {
 text-align: center;
+align: center;
 }
 </style>
 </head>
 <body class="main">
-<p>Enter path to essay (from <a>http://realec.org</a> :</p>
+<p>Enter path to essay (from <a href="http://realec.org">REALEC</a>) :</p>
 <form method="GET" name="generateExercises">
-<p><input type="text" name="essaypath" size="160"></p>
+<p><input type="text" name="essaypath" size="80%"></p>
 <p><b>Exercise generating options</b></p>
 <p><input type="checkbox" name="two-variants">Generate 2 variants of test <!--(Can be used only when option "Get the link to the output file"
 is selected)--></p>
