@@ -75,6 +75,7 @@ def write_on_server():
         include_smaller_mistakes = False)
         # files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
+        # print(files_to_send)
         return jsonify(files_to_send)
 
 if __name__ == '__main__':

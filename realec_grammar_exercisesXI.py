@@ -1287,7 +1287,7 @@ def test_with_ram():
 def test_direct_input():
     with open (r'./2nd-year-thesis/realec_dump_31_03_2018/exam/exam2014/DZu_23_2.txt','r',encoding='utf-8') as inp:
         text = inp.read()
-    with open (r'./2nd-year-thesis/realec_dump_31_03_2018/exam\exam2014\DZu_23_2.ann','r',encoding='utf-8') as inp:
+    with open (r'./2nd-year-thesis/realec_dump_31_03_2018/exam/exam2014/DZu_23_2.ann','r',encoding='utf-8') as inp:
         ann = inp.read()
     #for ex_type in ('open_cloze', 'short_answer', 'word_form'):
     main(ann=ann, text=text, exercise_types = ['open_cloze', 'short_answer', 'word_form'], use_ram = True,
@@ -1296,7 +1296,7 @@ def test_direct_input():
 
 def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['short_answer'],file_output = True,
  write_txt = False, use_ram = True, output_file_names = None, keep_processed = False, maintain_log = False, hier_choice = False,
- make_two_variants = False, exclude_repeated = False, output_path = './test_with_two_variants', include_smaller_mistakes = True):
+ make_two_variants = False, exclude_repeated = False, output_path = './quizzes', include_smaller_mistakes = True):
     helper = realec_helper.realecHelper()
     helper.download_essay(essay_name, include_json = False, save = False)
     e = Exercise(ann=helper.current_ann, text=helper.current_text,
