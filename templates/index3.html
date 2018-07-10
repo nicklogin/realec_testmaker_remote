@@ -5,28 +5,47 @@
 <style>
 .main {
 text-align: center;
-align: center;
+margin: auto;
+background-color: antiquewhite;
+width: 80%;
+}
+.downloader {
+width: 60%;
+border: solid;
+background-color: beige;
+margin: auto;
+}
+.options {
+width: 60%;
+background-color: beige;
+margin: auto;
+border: solid;
+border-width: thin;
 }
 </style>
 </head>
-<body class="main">
-<p>Enter path to essay (from <a href="http://realec.org">REALEC</a>) :</p>
+<body>
+<div class="main">
+<p><b>Enter path to essay (from <a href="http://realec.org">REALEC</a>) :</b></p>
 <form method="GET" name="generateExercises">
 <p><input type="text" name="essaypath" size="80%"></p>
-<p><b>Exercise generating options</b></p>
+<div class="options">
+<p><b>Test making options</b></p>
 <p><input type="checkbox" name="two-variants">Generate 2 variants of test <!--(Can be used only when option "Get the link to the output file"
 is selected)--></p>
 <p><input type="checkbox" name="not-repeat">Do not repeat questions in variants</p>
 <p><input type="checkbox" name="context">Include contexts</p>
+</div>
 <!-- <p><b>Output options</b></p>
 <p><input type="radio" name="fileaction" value="send_file">Get the output file</p>
 <p><input type="radio" name="fileaction" value="send_link">Get the link to the output file</p> -->
 </form>
 <a href="javascript:submitAndRedirect()">
-    <p><button>Generate exercises!</button></p>
+    <p><button>Generate test questions</button></p>
 </a>
-<div id="file-addr1" style="border: solid;">Here will be path(s) to your generated exercise file(s) <!--if option "Get the link to the output file
+<div id="file-addr1" class="main downloader">The link(s) to the generated test file(s) will appear here <!--if option "Get the link to the output file
     " is selected.--></div>
+</div>
 <script type="text/javascript">
     function submitAndRedirect() {
         // alert("entered")
