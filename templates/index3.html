@@ -85,7 +85,9 @@ is selected)--></p>
                             //добавь пиктограммы, которые открывали бы ссылки на скачивание файлов в новых окнах
                             alert('Your Moodle XML files are ready.');
                         }
-                    }
+                    } else if (this.readyState == 4 && this.status == 500) {
+                        alert("Invalid input: input must be a link to an existing annotated text in REALEC");
+                    };
                 };
         xhttp.open("GET",query,true);
         xhttp.send();

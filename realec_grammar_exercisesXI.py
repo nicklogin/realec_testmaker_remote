@@ -186,7 +186,7 @@ class Exercise:
      ann = None, text = None, error_types = [], bold = False, context = False, mode = 'folder',
       maintain_log = True, show_messages = True, use_ram=False,output_file_names = None,
       file_output = True, write_txt = False, keep_processed = False, hier_choice = False,
-      make_two_variants = False, exclude_repeated = False, include_smaller_mistakes = False):
+      make_two_variants = False, exclude_repeated = False, include_smaller_mistakes = False, file_prefix = '/'):
 
         """"
         :param error_types: list of str, can include values from
@@ -205,14 +205,14 @@ class Exercise:
         :param file_output: bool
         :param output_file_names: list of str
         """
-
+        self.file_prefix = file_prefix
         self.exercise_types = exercise_types
         self.error_type = error_types
         self.keep_processed = keep_processed
         # print(self.error_type)
         self.hier_choice = hier_choice
         if self.hier_choice:
-            with open ('hierarchy.json','r',encoding='utf-8') as inp:
+            with open (self.file_prefix + 'hierarchy.json','r',encoding='utf-8') as inp:
                 self.hierarchy = json.load(inp)
             self.get_hierarchy = lambda x: self.hierarchy[x] if x in self.hierarchy else 0
             self.hier_sort = lambda x: sorted(x,key = self.get_hierarchy, reverse = True)
@@ -239,17 +239,17 @@ class Exercise:
         if self.use_ram:
             self.processed_texts = []
         else:
-            self.path_new = './processed_texts/'
+            self.path_new = self.file_prefix + 'processed_texts/'
         if self.mode == 'direct_input':
             self.ann = ann
             self.text = text
         else:
-            self.path_old = path_to_realecdata
+            self.path_old = self.file_prefix + path_to_realecdata
         if self.file_output:
             if not output_path:
-                output_path = './moodle_exercises'
+                output_path = 'moodle_exercises'
             os.makedirs(output_path, exist_ok = True)
-            self.output_path = output_path
+            self.output_path = self.file_prefix + output_path
             if output_file_names:
                 self.output_file_names = output_file_names
             else:
@@ -284,8 +284,8 @@ class Exercise:
         # except:
         #     self.tagger = False
         if not self.use_ram:
-            os.makedirs('./processed_texts', exist_ok=True)
-        with open('./wordforms.json', 'r', encoding="utf-8") as dictionary:
+            os.makedirs(self.file_prefix+'processed_texts', exist_ok=True)
+        with open(self.file_prefix + 'wordforms.json', 'r', encoding="utf-8") as dictionary:
             self.wf_dictionary = json.load(dictionary)  # {'headword':[words,words,words]}
 
     def find_errors_indoc(self, line):
@@ -1296,7 +1296,7 @@ def test_direct_input():
 
 def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['short_answer'],file_output = True,
  write_txt = False, use_ram = True, output_file_names = None, keep_processed = False, maintain_log = False, hier_choice = False,
- make_two_variants = False, exclude_repeated = False, output_path = './quizzes', include_smaller_mistakes = True):
+ make_two_variants = False, exclude_repeated = False, output_path = './quizzes', include_smaller_mistakes = True, file_prefix = ''):
     helper = realec_helper.realecHelper()
     helper.download_essay(essay_name, include_json = False, save = False)
     e = Exercise(ann=helper.current_ann, text=helper.current_text,
@@ -1304,7 +1304,7 @@ def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['
      output_path = output_path, error_types = [], mode='direct_input', context=context,
      maintain_log = maintain_log, show_messages = False, bold = True, file_output = file_output, write_txt = write_txt, output_file_names = output_file_names,
      keep_processed = keep_processed, hier_choice = hier_choice, make_two_variants = make_two_variants, exclude_repeated = exclude_repeated,
-     include_smaller_mistakes = include_smaller_mistakes)
+     include_smaller_mistakes = include_smaller_mistakes, file_prefix = file_prefix)
     e.make_data_ready_4exercise()
     e.make_exercise()
     if file_output:
@@ -1333,7 +1333,7 @@ if __name__ == '__main__':
     # file_objects = generate_exercises_from_essay('/exam/exam2014/DZu_23_2', file_output = False, write_txt = False)
     # for i in file_objects:
     #     print(i, file_objects[i].getvalue())
-    file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/EGe_105_2', file_output = True, write_txt = False, use_ram=False,
+    file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/ABL_1_2', file_output = True, write_txt = False, use_ram=False,
     keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False, output_path='./quizzes',
     include_smaller_mistakes=False)
     for i in file_addrs:

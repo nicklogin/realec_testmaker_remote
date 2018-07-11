@@ -2,8 +2,9 @@ from flask import Flask, render_template, url_for, request, send_file, redirect,
 import realec_grammar_exercisesXI
 import html
 import urllib.parse
-import pathlib
-##здесь присылаем файл из оперативной памяти:
+import os, inspect
+# import pathlib
+        
 app = Flask(__name__)
 
 @app.route('/')
@@ -47,7 +48,7 @@ def display_index():
 def send_exercise_file():
     if request.args:
         essay_addr = html.unescape(request.args['name'])
-        essay_addr = str(pathlib.Path(essay_addr).absolute())
+        # essay_addr = str(pathlib.Path(essay_addr).absolute())
         essay_addr += '.xml'
         return send_file(essay_addr)
 
@@ -69,10 +70,18 @@ def write_on_server():
             context = True
         else:
             context = False
-        print(essay_addr)
-        files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = './quizzes',
-        file_output = True, write_txt = False, make_two_variants = two_var, exclude_repeated = norepeat, hier_choice = True,
-        include_smaller_mistakes = False)
+        # prefix = os.path.abspath(os.path.split(inspect.getsourcefile(realec_grammar_exercisesXI))[0])
+        prefix = '/home/nlogin/testmaker_web/realec_testmaker_web'
+        prefix += '/'
+        # print(essay_addr)
+        try:
+            files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = './quizzes',
+            file_output = True, write_txt = False, make_two_variants = two_var, exclude_repeated = norepeat, hier_choice = True,
+            include_smaller_mistakes = False, file_prefix = prefix)
+        except:
+            empty_response = jsonify(dict())
+            empty_response.status_code = 500
+            return empty_response
         # files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         # print(files_to_send)
