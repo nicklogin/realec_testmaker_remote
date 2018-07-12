@@ -70,18 +70,19 @@ def write_on_server():
             context = True
         else:
             context = False
-        # prefix = os.path.abspath(os.path.split(inspect.getsourcefile(realec_grammar_exercisesXI))[0])
-        prefix = '/home/nlogin/testmaker_web/realec_testmaker_web'
+        prefix = os.path.abspath(os.path.split(inspect.getsourcefile(realec_grammar_exercisesXI))[0])
+        # prefix = '/home/nlogin/testmaker_web/realec_testmaker_web'
         prefix += '/'
         # print(essay_addr)
         try:
             files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = './quizzes',
             file_output = True, write_txt = False, make_two_variants = two_var, exclude_repeated = norepeat, hier_choice = True,
             include_smaller_mistakes = False, file_prefix = prefix)
-        except:
-            empty_response = jsonify(dict())
-            empty_response.status_code = 500
-            return empty_response
+        except Exception as e:
+            exception = {"doc": e.__doc__ }
+            response = jsonify(exception)
+            response.status_code = 500
+            return response
         # files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         # print(files_to_send)
