@@ -49,6 +49,8 @@ def send_exercise_file():
     if request.args:
         essay_addr = html.unescape(request.args['name'])
         # essay_addr = str(pathlib.Path(essay_addr).absolute())
+        prefix = os.path.abspath(os.path.split(inspect.getsourcefile(realec_grammar_exercisesXI))[0]) + '/'
+        essay_addr = prefix + essay_addr
         essay_addr += '.xml'
         return send_file(essay_addr)
 
@@ -84,6 +86,7 @@ def write_on_server():
             response.status_code = 500
             return response
         # files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
+        files_to_send = {i:files_to_send[i][len(prefix):] for i in files_to_send}
         files_to_send = {i:"/getfile?name="+urllib.parse.quote(files_to_send[i],safe='') for i in files_to_send}
         # print(files_to_send)
         return jsonify(files_to_send)
