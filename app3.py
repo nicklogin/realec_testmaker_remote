@@ -75,7 +75,7 @@ def write_on_server():
         prefix += '/'
         # print(essay_addr)
         try:
-            files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = './quizzes',
+            files_to_send = realec_grammar_exercisesXI.generate_exercises_from_essay(essay_addr, context = context, output_path = 'quizzes',
             file_output = True, write_txt = False, make_two_variants = two_var, exclude_repeated = norepeat, hier_choice = True,
             include_smaller_mistakes = False, file_prefix = prefix)
         except Exception as e:

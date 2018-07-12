@@ -246,10 +246,10 @@ class Exercise:
         else:
             self.path_old = self.file_prefix + path_to_realecdata
         if self.file_output:
+            self.output_path = self.file_prefix + output_path
             if not output_path:
                 output_path = 'moodle_exercises'
-            os.makedirs(output_path, exist_ok = True)
-            self.output_path = self.file_prefix + output_path
+            os.makedirs(self.output_path, exist_ok = True)
             if output_file_names:
                 self.output_file_names = output_file_names
             else:
@@ -1294,15 +1294,15 @@ def test_direct_input():
      output_path = './test_with_direct_input_output_file_input', error_types = [], mode='direct_input', context=False,
       maintain_log = True, show_messages = True, bold = True)
 
-def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['short_answer'],file_output = True,
+def generate_exercises_from_essay(essay_name, context=False, exercise_types = ['short_answer'],file_output = True, show_messages = False,
  write_txt = False, use_ram = True, output_file_names = None, keep_processed = False, maintain_log = False, hier_choice = False,
- make_two_variants = False, exclude_repeated = False, output_path = './quizzes', include_smaller_mistakes = True, file_prefix = ''):
+ make_two_variants = False, exclude_repeated = False, output_path = 'quizzes', include_smaller_mistakes = True, file_prefix = os.getcwd()+'/'):
     helper = realec_helper.realecHelper()
     helper.download_essay(essay_name, include_json = False, save = False)
     e = Exercise(ann=helper.current_ann, text=helper.current_text,
      exercise_types = exercise_types, use_ram = use_ram,
      output_path = output_path, error_types = [], mode='direct_input', context=context,
-     maintain_log = maintain_log, show_messages = False, bold = True, file_output = file_output, write_txt = write_txt, output_file_names = output_file_names,
+     maintain_log = maintain_log, show_messages = show_messages, bold = True, file_output = file_output, write_txt = write_txt, output_file_names = output_file_names,
      keep_processed = keep_processed, hier_choice = hier_choice, make_two_variants = make_two_variants, exclude_repeated = exclude_repeated,
      include_smaller_mistakes = include_smaller_mistakes, file_prefix = file_prefix)
     e.make_data_ready_4exercise()
@@ -1334,8 +1334,8 @@ if __name__ == '__main__':
     # for i in file_objects:
     #     print(i, file_objects[i].getvalue())
     file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/ABL_1_2', file_output = True, write_txt = False, use_ram=False,
-    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False, output_path='./quizzes',
-    include_smaller_mistakes=False)
+    keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False, output_path='quizzes',
+    include_smaller_mistakes=False, show_messages = True)
     for i in file_addrs:
         print(i, file_addrs[i])
     # console_user_interface()
