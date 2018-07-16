@@ -219,6 +219,7 @@ class Exercise:
         self.make_two_variants = make_two_variants
         self.exclude_repeated = exclude_repeated
         # self.sent_tokenize_processed = lambda x: re.findall(r".*?\*\*[0-9]+\*\*.*?[\.?!]",x)
+        self.sent_tokenize_processed = lambda x: [i[0] for i in re.findall(r"(([A-Z].*?)?(\*\*.*?){6}[\.\?!])",x)]
         self.to_include = lambda x: True if (x["Error"] in self.error_type or self.error_type==[''] or not self.error_type) and (x["Relation"]!="Dependant_change") else False
         self.current_doc_errors = OrderedDict()
         self.bold = bold
@@ -730,17 +731,17 @@ class Exercise:
         """
         def create_short_answer_ex(sent, wrong, other, right_answer, index):
             if self.bold:
-                new_sent = sent + '<b>' + wrong + '</b>' + other[int(index):] + '.'
+                new_sent = sent + '<b>' + wrong + '</b>' + other[int(index):] #+ '.'
             else:
-                new_sent = sent + wrong + other[int(index):] + '.'
+                new_sent = sent + wrong + other[int(index):] #+ '.'
             answers = [right_answer]
             return new_sent, answers
 
         def build_exercise_text(text, answers, index=None, single_question = False):
             # if sent1 and sent3 and self.context: # fixed sentences beginning with a dot
-            #     text = correct_all_errors(sent1) + '. ' + new_sent + ' ' + correct_all_errors(sent3) + '.'
+            #     text = correct_all_errors(sent1) + '. ' + new_sent + ' ' + correct_all_errors(sent3) #+ '.'
             # elif sent3 and self.context:
-            #     text = new_sent + ' ' + correct_all_errors(sent3) + '.'
+            #     text = new_sent + ' ' + correct_all_errors(sent3) #+ '.'
             # else:
             #     text = new_sent
             text = re.sub(' +',' ',text)
@@ -776,7 +777,13 @@ class Exercise:
                 good_sentences['multiple_choice_variant1'] = list()
                 good_sentences['multiple_choice_variant2'] = list()
         types1 = [i for i in self.exercise_types if i!='word_form']
-        sentences = new_text.split('.')
+        # sentences = [i+'.' for i in new_text.split('.')]
+        sentences = self.sent_tokenize_processed(new_text)
+        ##some debbuging
+        # for i in sentences:
+        #     print(i)
+        #     input()
+        ##end of some debugging
         # i = 0
         if self.context:
             sentences = ['.'.join(sentences[i:i+3]) for i in range(0,len(sentences),3)]
@@ -847,11 +854,11 @@ class Exercise:
                                 # right_ops = [op for op in ops if op[1]>right_bord]
                                 if ex_type == 'short_answer':
                                     if self.bold:
-                                        new_sent = sent + '<b>' + wrong + '</b>' + other + '.'
-                                        new_sent2 = edited_sent[:bord1] + '<b>' + candidate['Wrong'] + '</b>' + edited_sent[bord2:] + '.'
+                                        new_sent = sent + '<b>' + wrong + '</b>' + other #+ '.'
+                                        new_sent2 = edited_sent[:bord1] + '<b>' + candidate['Wrong'] + '</b>' + edited_sent[bord2:] #+ '.'
                                     else:
-                                        new_sent = sent + wrong + other + '.'
-                                        new_sent2 = edited_sent[:bord1] + wrong + edited_sent[bord2:] + '.'
+                                        new_sent = sent + wrong + other #+ '.'
+                                        new_sent2 = edited_sent[:bord1] + wrong + edited_sent[bord2:] #+ '.'
                                     answers = [right_answer]
                                     answers2 = [candidate['Right']]
                                 # elif ex_type == 'multiple_choice':
@@ -866,7 +873,7 @@ class Exercise:
                     elif ex_type == 'word_form':
                         try:
                             new_sent = sent + "{1:SHORTANSWER:=%s}" % right_answer + ' (' +\
-                                   self.check_headform(right_answer) + ')' + other[int(index):] + '.'
+                                   self.check_headform(right_answer) + ')' + other[int(index):] #+ '.'
                             answers = [right_answer]
                         except:
                             if len(self.exercise_types) > 1:
@@ -876,13 +883,13 @@ class Exercise:
                     elif ex_type == 'short_answer':
                         new_sent, answers = create_short_answer_ex(sent, wrong, other, right_answer, index)
                     elif ex_type == 'open_cloze':
-                        new_sent = sent + "{1:SHORTANSWER:=%s}" % right_answer + other[int(index):] + '.'
+                        new_sent = sent + "{1:SHORTANSWER:=%s}" % right_answer + other[int(index):] #+ '.'
                         answers = [right_answer]
                     # if ex_type == 'multiple_choice':
-                    #     new_sent = sent + "_______ " + other[int(index):] + '.'
+                    #     new_sent = sent + "_______ " + other[int(index):] #+ '.'
                     #     answers = self.find_choices(right_answer, wrong, new_sent)
                     #     if len(answers)<3:
-                    #         sentences[i] = sent + ' ' + right_answer + ' ' + other[int(index):] + '.'
+                    #         sentences[i] = sent + ' ' + right_answer + ' ' + other[int(index):] #+ '.'
                     #         answers = []
                     #     else:
                     #         if self.show_messages:
@@ -1013,9 +1020,9 @@ class Exercise:
                                 if self.make_two_variants:
                                     new_sent2 = sent + new_sent2
                         else:
-                            new_sent = new_sent + '.'
+                            new_sent = new_sent #+ '.'
                             if self.make_two_variants:
-                                new_sent2 = new_sent2 + '.'
+                                new_sent2 = new_sent2 #+ '.'
                 if self.make_two_variants:
                     if ex_type in ('short_answer','multiple_choice'):
                         if single_error_in_sent:
@@ -1195,11 +1202,11 @@ class Exercise:
                 new_sents = self.create_sentence_function(new_text)
                 for key in all_sents:
                     if self.make_two_variants:
-                        for err in self.error_type:
-                            if len(new_sents[err+'_variant1'])>len(new_sents[err+'_variant2']):
-                                for i in range(len(new_sents[err+'_variant1'])):
-                                    if new_sents[err+'_variant1'][i][3] == True:
-                                        new_sents[err+'_variant1'].pop(i)
+                        for ex in self.exercise_types:
+                            if len(new_sents[ex+'_variant1'])>len(new_sents[ex+'_variant2']):
+                                for i in range(len(new_sents[ex+'_variant1'])):
+                                    if new_sents[ex+'_variant1'][i][3] == True:
+                                        new_sents[ex+'_variant1'].pop(i)
                                         break
                     all_sents[key] += new_sents[key]
         for key in all_sents:
@@ -1333,9 +1340,9 @@ if __name__ == '__main__':
     # file_objects = generate_exercises_from_essay('/exam/exam2014/DZu_23_2', file_output = False, write_txt = False)
     # for i in file_objects:
     #     print(i, file_objects[i].getvalue())
-    file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/ABL_1_2', file_output = True, write_txt = False, use_ram=False,
+    file_addrs = generate_exercises_from_essay('http://realec.org/index.xhtml#/exam/exam2017/EGe_105_2', file_output = True, write_txt = False, use_ram=False,
     keep_processed=True, maintain_log = True, hier_choice = True, make_two_variants = True, exclude_repeated = True, context = False, output_path='quizzes',
     include_smaller_mistakes=False, show_messages = True)
     for i in file_addrs:
-        print(i, file_addrs[i])
+        print(i, file_addrs[i]+'.xml')
     # console_user_interface()

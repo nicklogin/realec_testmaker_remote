@@ -89,8 +89,12 @@ class realecHelper:
         # raise Exception
         return self.get_file_path.format(collection,file,extension)
     
-    def download_essay(self, path_to_essay, path_to_saved_essay='.', include_ann=True, include_json=True, save=False):
+    def download_essay(self, path_to_essay, path_to_saved_essay='.', include_ann=True, include_json=False, save=False):
         # print(path_to_essay)
+        ##adition for workshop (for essays located at realec.org/hse/)
+        if 'realec.org/hse' in path_to_essay:
+            self.get_file_path = 'http://realec.org/hse/ajax.cgi?action=downloadFile&protocol=1&collection={}&document={}&extension={}'
+        ##end of addition
         last_slash_ind = path_to_essay.rfind('/')
         extension_ind = path_to_essay[last_slash_ind:].find('.')
         if extension_ind > -1:
