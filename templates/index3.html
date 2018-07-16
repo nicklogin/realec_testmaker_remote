@@ -72,14 +72,14 @@ is selected)--></p>
                     if (this.readyState == 4 && this.status == 200) {
                         if (n_variants===false) {
                             var essayaddr = JSON.parse(this.responseText)["short_answer"];
-                            essayaddr = '/realec-testmaker'+essayaddr;
+                            // essayaddr = '/realec-testmaker'+essayaddr;
                             alert("Your file is ready");
                             document.getElementById("file-addr1").innerHTML = '<a href="'+essayaddr+'" download="short_answer"> Download </a>';
                         } else {
                             var essayaddr1 = JSON.parse(this.responseText)["short_answer_variant1"];
                             var essayaddr2 = JSON.parse(this.responseText)["short_answer_variant2"];
-                            essayaddr1 = '/realec-testmaker'+essayaddr1;
-                            essayaddr2 = '/realec-testmaker'+essayaddr2;
+                            // essayaddr1 = '/realec-testmaker'+essayaddr1;
+                            // essayaddr2 = '/realec-testmaker'+essayaddr2;
                             var addrs = '<p>Variant1: ';
                             addrs += '<a href="'+essayaddr1+'" download="short_answer_variant1.xml"> Download</a></p>';
                             addrs += '<p>Variant2: ';
